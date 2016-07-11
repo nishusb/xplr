@@ -98,6 +98,9 @@ function draw() { //draw the graphics
           } //draw the ship
           d.fillStyle = '#333';
           d.fillText("speed: "+ships[game.ship].speed+", weight: "+ships[game.ship].weight+", hp: "+ships[game.ship].hp+", vspeed: "+ships[game.ship].vspeed, ((c.width-256/2)-772)+10, 500);
+          d.fillRect((c.width-256/2)-772+500, 480, 200, 40);
+          d.fillStyle = '#aaa';
+          d.fillText("CLOSE EDITOR",(c.width-256/2)-772+510,510);
      } else if (game.mode === "flight") {
           for (var p in ships[game.ship].parts) {
                d.drawImage(images[ships[game.ship].parts[p].n], ships[game.ship].parts[p].x+camera.x+ships[game.ship].x, ships[game.ship].parts[p].y+camera.y-ships[game.ship].y);
