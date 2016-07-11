@@ -83,9 +83,9 @@ function draw() { //draw the graphics
                     d.fillText(parts[i].a, 24, 72*i+48);
                }
           }
-          d.fillStyle = "#ddd"; // drawing the grid
+          d.fillStyle = "#ccc"; // drawing the grid
           d.fillRect((c.width-256/2)-772, 20, 772, 500);
-          d.fillStyle = "#ccc";
+          d.fillStyle = "#bbb";
           for (var x=0; x<737; x+= 64) {
                for (var y = 0; y < 437; y+= 64) {
                     d.fillRect(x+(c.width-256/2)-768, 24+y, 60, 60);
@@ -102,6 +102,8 @@ function draw() { //draw the graphics
           d.fillStyle = '#aaa';
           d.fillText("CLOSE EDITOR",(c.width-256/2)-772+510,510);
      } else if (game.mode === "flight") {
+          d.fillStyle = "#0AD";
+          d.fillRect(0, 0, c.width, c.height);
           for (var p in ships[game.ship].parts) {
                d.drawImage(images[ships[game.ship].parts[p].n], ships[game.ship].parts[p].x+camera.x+ships[game.ship].x, ships[game.ship].parts[p].y+camera.y-ships[game.ship].y);
           }
@@ -175,8 +177,18 @@ function update() { //update the game
                     }
                }
           }
+          if (mouse.x >= (c.width-256/2)-772+500 && mouse.y >= 480 && mouse.x <= (c.width-256/2)-772+500+200 && mouse.y <= 520) {
+               document.body.style.cursor = 'pointer';
+               if (mouse.down) {
+                    var ss = shipstats(ships[game.ship]);
+                    ships[game.ship].speed = ss.s;
+                    ships[game.ship].weight = ss.w;
+                    ships[game.ship].vspeed = ss.vs;
+                    game.mode = "flight";
+               }
+          }
      } else if (game.mode === "flight") {
-          //ships[game.ship].y -= 4;
+
      } else if (game.mode === "crafting") {
 
      } else {
