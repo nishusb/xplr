@@ -151,7 +151,6 @@ function draw() { //draw the graphics
                }
           }
 
-           ships[game.ship].parts;
           for (var p in ships[game.ship].parts) {
                rotatedImage(images[ships[game.ship].parts[p].n], ships[game.ship].parts[p].x+(c.width-256/2)-772, ships[game.ship].parts[p].y+24, ships[game.ship].parts[p].r);
           } //draw the ship
@@ -165,6 +164,18 @@ function draw() { //draw the graphics
           d.fillRect(0, 0, c.width, c.height);
           for (var p in ships[game.ship].parts) {
                rotatedImage(images[ships[game.ship].parts[p].n], ships[game.ship].parts[p].x-camera.x+ships[game.ship].x, ships[game.ship].parts[p].y+camera.y-ships[game.ship].y, ships[game.ship].parts[p].r);
+               if (ships[game.ship].fpower > 0) {
+                    if (ships[game.ship].parts[p].n === 'thruster') {
+                         d.fillStyle = "#0af";
+                         d.fillRect(ships[game.ship].parts[p].x-camera.x+ships[game.ship].x, ships[game.ship].parts[p].y+camera.y-ships[game.ship].y+20, -ships[game.ship].fpower*2*(Math.random()/2), 24);
+                    }
+               }
+               if (ships[game.ship].vpower > 0) {
+                    if (ships[game.ship].parts[p].n === 'vthruster') {
+                         d.fillStyle = "#fa0";
+                         d.fillRect(ships[game.ship].parts[p].x-camera.x+ships[game.ship].x+20, ships[game.ship].parts[p].y+camera.y-ships[game.ship].y+52, 24, ships[game.ship].vpower*2*(Math.random()/2));
+                    }
+               }
           }
           d.fillStyle = "#333";
           d.fillRect(0, 0, 120, 40);
@@ -270,6 +281,10 @@ function update() { //update the game
                }
           }
      } else if (game.mode === "flight") {
+          ships[game.ship].og = false;
+          ships[game.ship].vpower = 0;
+          ships[game.ship].fpower = 0;
+
           if (mouse.x >= 0 && mouse.y >= 0 && mouse.x <= 120 && mouse.y <= 40) {
                document.body.style.cursor = "pointer";
                if (mouse.down) {
@@ -313,10 +328,11 @@ function update() { //update the game
           ships[game.ship].yv += (ships[game.ship].vspeed/100)*ships[game.ship].vpower;
           ships[game.ship].xv += (ships[game.ship].speed/100)*ships[game.ship].fpower;
 
-          if (ships[game.ship].y <= ships[game.ship].height) {
+          if (ships[game.ship].y <= ships[game.ship].height && !keys[87]) {
                ships[game.ship].og = true;
                ships[game.ship].yv = 0;
                ships[game.ship].y = ships[game.ship].height;
+               ships[game.ship].iy = ships[game.ship].height;
                console.log(ships[game.ship].height);
           }
 
@@ -330,9 +346,6 @@ function update() { //update the game
           ships[game.ship].x += ships[game.ship].xv;
           ships[game.ship].y += ships[game.ship].yv;
 
-          ships[game.ship].og = false;
-          ships[game.ship].vpower = 0;
-          ships[game.ship].fpower = 0;
      } else if (game.mode === "crafting") {
 
      } else {
