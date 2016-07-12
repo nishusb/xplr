@@ -16,6 +16,10 @@ document.addEventListener("mouseup", function() {mouse.down=false});
 document.addEventListener("keydown", function(e) {keys[e.keyCode] = true; console.log(e.keyCode)});
 document.addEventListener("keyup", function(e) {keys[e.keyCode] = false; keyClick = e.keyCode});
 
+function random(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
  //begin game variables
 
 var game = {
@@ -36,8 +40,21 @@ var ships = [
 ]; //spaceships
 
 var parts = [
-     {n: 'cockpit', a: 99}, {n: 'armor', a: 99}, {n: 'rmarmor', a: 99}, {n: 'thruster', a: 99}, {n: 'vthruster', a: 99}
+     {n: 'cockpit', a: 1}, {n: 'armor', a: 1}, {n: 'rmarmor', a: 0}, {n: 'thruster', a: 1}, {n: 'vthruster', a: 1}
 ]; // parts available to use
+
+var terrain = [];
+for (var x = 0; x < 50; x++) {
+     var rs = random(-2, 2);
+     var h = 0;
+     if (x !== 0) {
+          h = terrain[x-1].y;
+          h += rs*64;
+          terrain.push({x: (x-25)*64, y: h});
+     } else {
+          terrain.push({x: (x-25)*64, y: h});
+     }
+}
 
 var keyClick = false;
 
@@ -182,8 +199,12 @@ function draw() { //draw the graphics
           d.fillStyle = "#aaa";
           d.fillText("EDITOR", 10, 30);
 
-          d.fillStyle = "#3f7";
-          d.fillRect(0, camera.y, c.width, c.height-camera.y);
+          //d.fillStyle = "#3f7";
+          //d.fillRect(0, camera.y, c.width, c.height-camera.y);
+          for (var bl in terrain) {
+               d.fillStyle = "#555";
+               d.fillRect(terrain[bl].x-camera.x, terrain[bl].y+camera.y, 64, 512);
+          }
      } else if (game.mode === "crafting") {
 
      } else {
@@ -301,16 +322,17 @@ function update() { //update the game
           } if (keys[39]) {
                camera.xv += 2;
           }
+
           camera.xv *= 0.9;
           camera.yv *= 0.9;
           camera.x += camera.xv;
           camera.y += camera.yv;
 
           if (keys[65]) {
-               ships[game.ship].fpower = -100;
+               ships[game.ship].fpower -= 100;
           }
           if (keys[68]) {
-               ships[game.ship].fpower = 100;
+               ships[game.ship].fpower += 100;
           }
           if (keys[87]) {
                ships[game.ship].iy += ships[game.ship].vspeed;
@@ -328,13 +350,27 @@ function update() { //update the game
           ships[game.ship].yv += (ships[game.ship].vspeed/100)*ships[game.ship].vpower;
           ships[game.ship].xv += (ships[game.ship].speed/100)*ships[game.ship].fpower;
 
-          if (ships[game.ship].y <= ships[game.ship].height && !keys[87]) {
-               ships[game.ship].og = true;
-               ships[game.ship].yv = 0;
-               ships[game.ship].y = ships[game.ship].height;
-               ships[game.ship].iy = ships[game.ship].height;
-               console.log(ships[game.ship].height);
+          for (var bl in terrain) {
+               if (terrain[bl].x <= ships[game.ship].x+ships[game.ship].width && terrain[bl].x >= ships[game.ship].x-64) {
+                    if (ships[game.ship].y <= ships[game.ship].height-terrain[bl].y && !keys[87]) {
+                         ships[game.ship].og = true;
+                         ships[game.ship].yv = 0;
+                         ships[game.ship].y = ships[game.ship].height-terrain[bl].y;
+                         ships[game.ship].iy = ships[game.ship].height-terrain[bl].y;
+                    }
+               }
           }
+
+          //if (ships[game.ship].y <= ships[game.ship].height && !keys[87]) {
+          //     ships[game.ship].og = true;
+          //     ships[game.ship].yv = 0;
+          //     ships[game.ship].y = ships[game.ship].height;
+          //     ships[game.ship].iy = ships[game.ship].height;
+          //     console.log(ships[game.ship].height);
+          //}
+          //if (ships[game.ship].y < ships[game.ship].height && keys[87]) {
+          //     ships[game.ship].y = ships[game.ship].height;
+          //}
 
           if (!ships[game.ship].og) {
                ships[game.ship].yv -= 2;
