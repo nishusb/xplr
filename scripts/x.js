@@ -23,8 +23,8 @@ function random(min, max) {
  //begin game variables
 
 var game = {
-     mode: 'editor',
-     ship: '0'
+     mode: 'flight',
+     ship: 0
 }
 var camera = {
      x: 0,
@@ -36,11 +36,13 @@ var camera = {
      }
 }
 var ships = [
-     {n: 'x1', x: 0, y: 256, xv: 0, yv: 0, parts: [], speed: 0, vspeed: 0, hp: 0, weight: 0, width: 0, height: 0, vpower: 0, fpower: 0, iy: 256, og: false}
+     {n: 'x1', x: 0, y: 256, xv: 0, yv: 0,
+     parts: [{n: 'cockpit', x:128 , y:0 , r: 0}, {n: 'armor', x:64 , y:0 , r: 0}, {n: 'thruster', x:0 , y:0 , r: 0}, {n: 'vthruster', x: 128, y: 64, r: 0}],
+     speed: 0, vspeed: 0, hp: 0, weight: 0, width: 0, height: 0, vpower: 0, fpower: 0, iy: 256, og: false}
 ]; //spaceships
 
 var parts = [
-     {n: 'cockpit', a: 1}, {n: 'armor', a: 1}, {n: 'rmarmor', a: 0}, {n: 'thruster', a: 1}, {n: 'vthruster', a: 1}
+     {n: 'cockpit', a: 2}, {n: 'armor', a: 32}, {n: 'rmarmor', a: 16}, {n: 'thruster', a: 4}, {n: 'vthruster', a: 4}
 ]; // parts available to use
 
 var terrain = [];
@@ -138,6 +140,20 @@ function resize() {
 resize(); //make canvas fullscreen automatically when the page loads
 window.onresize = resize; //resize whenever screen size changes.
 
+var ss = shipstats(ships[game.ship]);
+ships[game.ship].speed = ss.s;
+ships[game.ship].weight = ss.w;
+ships[game.ship].vspeed = ss.vs;
+ships[game.ship].height = ss.th;
+ships[game.ship].width = ss.tw;
+for (var p in ships[game.ship].parts) {
+     ships[game.ship].parts[p].x -= ss.mx;
+     ships[game.ship].parts[p].y -= ss.my;
+
+     console.log(ships[game.ship].parts[p].x);
+     console.log(ships[game.ship].parts[p].y);
+}
+
 function draw() { //draw the graphics
      d.clearRect(0, 0, c.width, c.height);
      if (game.mode === 'editor') {
@@ -177,20 +193,69 @@ function draw() { //draw the graphics
           d.fillStyle = '#aaa';
           d.fillText("CLOSE EDITOR",(c.width-256/2)-772+510,510);
      } else if (game.mode === "flight") {
+          d.font = "25px Raleway";
           d.fillStyle = "#2bf";
           d.fillRect(0, 0, c.width, c.height);
+
+          /*var radians = (Math.PI/180);
+          d.save();
+          d.translate(-camera.x+ships[game.ship].x-ships[game.ship].width/2, camera.y-ships[game.ship].y-ships[game.ship].height/2);
+          d.rotate(ships[game.ship].r*radians);
           for (var p in ships[game.ship].parts) {
-               rotatedImage(images[ships[game.ship].parts[p].n], ships[game.ship].parts[p].x-camera.x+ships[game.ship].x, ships[game.ship].parts[p].y+camera.y-ships[game.ship].y, ships[game.ship].parts[p].r);
+               rotatedImage(images[ships[game.ship].parts[p].n], ships[game.ship].parts[p].x, ships[game.ship].parts[p].y, ships[game.ship].parts[p].r);
                if (ships[game.ship].fpower > 0) {
                     if (ships[game.ship].parts[p].n === 'thruster') {
                          d.fillStyle = "#0af";
-                         d.fillRect(ships[game.ship].parts[p].x-camera.x+ships[game.ship].x, ships[game.ship].parts[p].y+camera.y-ships[game.ship].y+20, -ships[game.ship].fpower*2*(Math.random()/2), 24);
+                         d.fillRect(ships[game.ship].parts[p].x+12, ships[game.ship].parts[p].y+20, -ships[game.ship].fpower*2*(Math.random()/2), 24);
                     }
                }
                if (ships[game.ship].vpower > 0) {
                     if (ships[game.ship].parts[p].n === 'vthruster') {
                          d.fillStyle = "#fa0";
-                         d.fillRect(ships[game.ship].parts[p].x-camera.x+ships[game.ship].x+20, ships[game.ship].parts[p].y+camera.y-ships[game.ship].y+52, 24, ships[game.ship].vpower*2*(Math.random()/2));
+                         d.fillRect(ships[game.ship].parts[p].x+20, ships[game.ship].parts[p].y+52, 24, ships[game.ship].vpower*2*(Math.random()/2));
+                    }
+               }
+          }
+          d.restore();*/
+          for (var p in ships[game.ship].parts) {
+               if (ships[game.ship].parts[p].n !== 'vthruster') {
+                    rotatedImage(images[ships[game.ship].parts[p].n],
+                    ships[game.ship].parts[p].x-camera.x+ships[game.ship].x,
+                    ships[game.ship].parts[p].y+camera.y-ships[game.ship].y,
+                    ships[game.ship].parts[p].r);
+               } else {
+                    if (ships[game.ship].fpower >= 0) {
+                         rotatedImage(images[ships[game.ship].parts[p].n],
+                         ships[game.ship].parts[p].x-camera.x+ships[game.ship].x,
+                         ships[game.ship].parts[p].y+camera.y-ships[game.ship].y,
+                         0);
+                    } else {
+                         rotatedImage(images[ships[game.ship].parts[p].n],
+                         ships[game.ship].parts[p].x-camera.x+ships[game.ship].x,
+                         ships[game.ship].parts[p].y+camera.y-ships[game.ship].y,
+                         -10)
+                    }
+               }
+               if (ships[game.ship].fpower > 0) {
+                    if (ships[game.ship].parts[p].n === 'thruster') {
+                         d.fillStyle = "#0af";
+                         d.fillRect(ships[game.ship].parts[p].x-camera.x+ships[game.ship].x+12, ships[game.ship].parts[p].y+camera.y-ships[game.ship].y+20, -ships[game.ship].fpower-(Math.random()*20), 24);
+                    }
+               }
+               if (ships[game.ship].vpower > 0) {
+                    if (ships[game.ship].parts[p].n === 'vthruster') {
+                         if (ships[game.ship].fpower >= 0) {
+                              d.fillStyle = "#fa0";
+                              d.fillRect(ships[game.ship].parts[p].x-camera.x+ships[game.ship].x+20, ships[game.ship].parts[p].y+camera.y-ships[game.ship].y+52, 24, ships[game.ship].vpower-(Math.random()*20));
+                         } else {
+                              d.fillStyle = "#fa0";
+                              d.save();
+                              d.translate(ships[game.ship].parts[p].x-camera.x+ships[game.ship].x, ships[game.ship].parts[p].y+camera.y-ships[game.ship].y);
+                              var radians = -10 * (Math.PI/180);
+                              d.rotate(radians);
+                              d.fillRect(14, 58, 24, ships[game.ship].vpower-(Math.random()*20));
+                              d.restore();
+                         }
                     }
                }
           }
@@ -198,12 +263,13 @@ function draw() { //draw the graphics
           d.fillRect(0, 0, 120, 40);
           d.fillStyle = "#aaa";
           d.fillText("EDITOR", 10, 30);
+          d.fillText("x: "+Math.round(ships[game.ship].x)+", y: "+Math.round(ships[game.ship].y), 130, 30);
 
           //d.fillStyle = "#3f7";
           //d.fillRect(0, camera.y, c.width, c.height-camera.y);
           for (var bl in terrain) {
                d.fillStyle = "#555";
-               d.fillRect(terrain[bl].x-camera.x, terrain[bl].y+camera.y, 64, 512);
+               d.fillRect(terrain[bl].x-camera.x, terrain[bl].y+camera.y, 64, c.height-terrain[bl].y+camera.y);
           }
      } else if (game.mode === "crafting") {
 
@@ -258,7 +324,12 @@ function update() { //update the game
                               ships[game.ship].parts[p].y = Math.round(ships[game.ship].parts[p].y/64)*64;
                               ships[game.ship].parts[p].r = Math.round(ships[game.ship].parts[p].r/90)*90;
                               if (ships[game.ship].parts[p].x < 0 || ships[game.ship].parts[p].x > 709 || ships[game.ship].parts[p].y > 500) {
-                                   console.log('deleted! '+p)
+                                   console.log('deleted! '+p);
+                                   for (var a in parts) {
+                                        if (parts[a].n === ships[game.ship].parts[p].n) {
+                                             parts[a].a ++;
+                                        }
+                                   }
                                    ships[game.ship].parts.splice(p, 1);
                               }
                               console.log('up, '+ships[game.ship].parts[p].x+', '+ships[game.ship].parts[p].y+', '+ships[game.ship].parts[p].n);
@@ -305,6 +376,7 @@ function update() { //update the game
           ships[game.ship].og = false;
           ships[game.ship].vpower = 0;
           ships[game.ship].fpower = 0;
+          ships[game.ship].r = 0;
 
           if (mouse.x >= 0 && mouse.y >= 0 && mouse.x <= 120 && mouse.y <= 40) {
                document.body.style.cursor = "pointer";
@@ -313,7 +385,7 @@ function update() { //update the game
                }
           }
 
-          if (keys[38]) {
+          /*if (keys[38]) {
                camera.yv += 2;
           } if (keys[40]) {
                camera.yv -= 2;
@@ -326,10 +398,14 @@ function update() { //update the game
           camera.xv *= 0.9;
           camera.yv *= 0.9;
           camera.x += camera.xv;
-          camera.y += camera.yv;
+          camera.y += camera.yv;*/
+
+          camera.x = ships[game.ship].x-c.width/2+ships[game.ship].width/2;//-(ships[game.ship].width/2);
+          camera.y = ships[game.ship].y+c.height/2-ships[game.ship].height/2;//-(ships[game.ship].height/2);
 
           if (keys[65]) {
-               ships[game.ship].fpower -= 100;
+               ships[game.ship].fpower -= 20;
+               ships[game.ship].r = -20;
           }
           if (keys[68]) {
                ships[game.ship].fpower += 100;
@@ -338,7 +414,7 @@ function update() { //update the game
                ships[game.ship].iy += ships[game.ship].vspeed;
           }
           if (keys[83]) {
-               ships[game.ship].iy -= ships[game.ship].vspeed;
+               ships[game.ship].iy -= 10;
           }
 
           if (ships[game.ship].y < ships[game.ship].iy-100) {
@@ -352,11 +428,23 @@ function update() { //update the game
 
           for (var bl in terrain) {
                if (terrain[bl].x <= ships[game.ship].x+ships[game.ship].width && terrain[bl].x >= ships[game.ship].x-64) {
-                    if (ships[game.ship].y <= ships[game.ship].height-terrain[bl].y && !keys[87]) {
+                    if (ships[game.ship].y <= ships[game.ship].height-terrain[bl].y && ships[game.ship].y > ships[game.ship].height-terrain[bl].y-16) {
                          ships[game.ship].og = true;
-                         ships[game.ship].yv = 0;
-                         ships[game.ship].y = ships[game.ship].height-terrain[bl].y;
-                         ships[game.ship].iy = ships[game.ship].height-terrain[bl].y;
+                         if (!keys[87]) {
+                              ships[game.ship].yv = 0;
+                              ships[game.ship].y = ships[game.ship].height-terrain[bl].y;
+                              ships[game.ship].iy = ships[game.ship].height-terrain[bl].y;
+                         }
+                    } else if (ships[game.ship].y < ships[game.ship].height-terrain[bl].y-16) {
+                         if (ships[game.ship].x+ships[game.ship].width > terrain[bl].x && ships[game.ship].x+ships[game.ship].width < terrain[bl].x+16) {
+                              ships[game.ship].x = terrain[bl].x-ships[game.ship].width;
+                              ships[game.ship].xv = 0;
+                              console.log('collision');
+                         } else if (ships[game.ship].x < terrain[bl].x+64 && ships[game.ship].x > terrain[bl].x+48) {
+                              ships[game.ship].x = terrain[bl].x+64;
+                              ships[game.ship].xv = 0;
+                              console.log('collision');
+                         }
                     }
                }
           }
@@ -373,11 +461,14 @@ function update() { //update the game
           //}
 
           if (!ships[game.ship].og) {
-               ships[game.ship].yv -= 2;
+               ships[game.ship].yv -= 3;
           }
 
           ships[game.ship].yv *= 0.9;
           ships[game.ship].xv *= 0.8;
+          if (ships[game.ship].og) {
+               ships[game.ship].xv *= 0;
+          }
 
           ships[game.ship].x += ships[game.ship].xv;
           ships[game.ship].y += ships[game.ship].yv;
