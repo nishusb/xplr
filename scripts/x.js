@@ -49,7 +49,7 @@ var ships = [
 ]; //spaceships
 
 var parts = [
-     {n: 'cockpit', a: 99}, {n: 'armor', a: 99}, {n: 'rmarmor', a: 99}, {n: 'thruster', a: 99}, {n: 'vthruster', a: 99}
+     {n: 'cockpit', a: 99}, {n: 'armor', a: 99}, {n: 'rmarmor', a: 99}, {n: 'thruster', a: 99}, {n: 'vthruster', a: 99}, {n: 'frthruster', a: 99}
 ]; // parts available to use
 
 var terrain = [];
@@ -90,6 +90,7 @@ images.astronaut = new Image(); images.astronaut.src = "images/astronaut.png";
 images.fastronaut = new Image(); images.fastronaut.src = "images/fastronaut.png";
 images.jetpack = new Image(); images.jetpack.src = "images/jetpack.png";
 images.assembler = new Image(); images.assembler.src = "images/assembler.png";
+images.frthruster = new Image(); images.frthruster.src = "images/frthruster.png";
 
 function rotatedImage(image, x, y, degrees) {
      var radians = degrees * (Math.PI/180);
@@ -112,6 +113,7 @@ function shipstats(ship) {
 
      var miny = 800;
      var maxy = 0;
+     var thefspeed = 0;
 
      if (ship.parts[0]) {
           for (var pr in ship.parts) {
@@ -136,6 +138,9 @@ function shipstats(ship) {
                if (ship.parts[pr].n === 'thruster') {
                     thespeed += 10;
                }
+               if (ship.parts[pr].n === 'frthruster') {
+                    thefspeed += 10;
+               }
                if (ship.parts[pr].n === 'vthruster') {
                     thevspeed += 10;
                }
@@ -149,7 +154,8 @@ function shipstats(ship) {
           tw: maxx-minx+64,
           th: maxy-miny+64,
           mx: minx,
-          my: miny
+          my: miny,
+          fs: Math.round(thefspeed/(theweight/4))
      };
 }
 
@@ -165,7 +171,7 @@ window.onresize = resize; //resize whenever screen size changes.
 
 document.addEventListener("click", function() {
      if (keys[66]) {
-          ships.push({n: 'x1', x: player.x, y: player.y+500, xv: 0, yv: 0, parts: [], speed: 0, vspeed: 0, hp: 0, weight: 0, width: 0, height: 0, vpower: 0, fpower: 0, iy: player.y+500, og: false});
+          ships.push({n: 'ship', x: player.x, y: player.y+500, xv: 0, yv: 0, parts: [], speed: 0, vspeed: 0, bspeed: 0, hp: 0, weight: 0, width: 0, height: 0, vpower: 0, fpower: 0, iy: player.y+500, og: false});
           game.ship = ships.length-1;
           game.mode = 'editor';
      }
@@ -316,7 +322,7 @@ function draw() { //draw the graphics
                rotatedImage(images[ships[game.ship].parts[p].n], ships[game.ship].parts[p].x+(c.width-256/2)-772, ships[game.ship].parts[p].y+24, ships[game.ship].parts[p].r);
           } //draw the ship
           d.fillStyle = '#333';
-          d.fillText("speed: "+ships[game.ship].speed+", weight: "+ships[game.ship].weight+", hp: "+ships[game.ship].hp+", vspeed: "+ships[game.ship].vspeed+", width: "+ships[game.ship].width+", height: "+ships[game.ship].height, ((c.width-256/2)-772)+10, 540);
+          d.fillText("speed: "+ships[game.ship].speed+", weight: "+ships[game.ship].weight+", hp: "+ships[game.ship].hp+", vspeed: "+ships[game.ship].vspeed+", bspeed: "+ships[game.ship].bspeed+", width: "+ships[game.ship].width+", height: "+ships[game.ship].height, ((c.width-256/2)-772)+10, 540);
           d.fillRect((c.width-256/2)-772+500, 480, 200, 40);
           d.fillStyle = '#aaa';
           d.fillText("CLOSE EDITOR",(c.width-256/2)-772+510,510);
@@ -410,8 +416,14 @@ function shipPhysics() {
                ships[ship].vpower = ships[ship].iy-ships[ship].y;
           }
 
+          if (ships[ship].fpower >= 0) {
+               ships[ship].xv += (ships[ship].speed/100)*ships[ship].fpower;
+          } else {
+               ships[ship].xv += (ships[ship].bspeed/100)*ships[ship].fpower;
+          }
+
           ships[ship].yv += (ships[ship].vspeed/100)*ships[ship].vpower;
-          ships[ship].xv += (ships[ship].speed/100)*ships[ship].fpower;
+          //ships[ship].xv += (ships[ship].speed/100)*ships[ship].fpower;
 
           for (var bl in terrain) {
                if (terrain[bl].x <= ships[ship].x+ships[ship].width && terrain[bl].x >= ships[ship].x-64) {
@@ -520,6 +532,7 @@ function update() { //update the game
                               ships[game.ship].speed = ss.s;
                               ships[game.ship].weight = ss.w;
                               ships[game.ship].vspeed = ss.vs;
+                              ships[game.ship].bspeed = ss.fs;
                               ships[game.ship].height = ss.th;
                               ships[game.ship].width = ss.tw;
                          }
@@ -545,6 +558,7 @@ function update() { //update the game
                     ships[game.ship].vspeed = ss.vs;
                     ships[game.ship].height = ss.th;
                     ships[game.ship].width = ss.tw;
+                    ships[game.ship].bspeed = ss.fs;
                     for (var p in ships[game.ship].parts) {
                          ships[game.ship].parts[p].x -= ss.mx;
                          ships[game.ship].parts[p].y -= ss.my;
@@ -595,8 +609,8 @@ function update() { //update the game
           camera.y = ships[game.ship].y+c.height/2-ships[game.ship].height/2;//-(ships[game.ship].height/2);
 
           if (keys[65]) {
-               ships[game.ship].fpower -= 20;
-               ships[game.ship].r = -20;
+               ships[game.ship].fpower -= 100;
+               //ships[game.ship].r = -20;
           }
           if (keys[68]) {
                ships[game.ship].fpower += 100;
