@@ -242,6 +242,45 @@ function drawTerrain() {
           d.fillStyle = "#555";
           d.fillRect(terrain[bl].x-camera.x, terrain[bl].y+camera.y+64, 65, c.height);
      }
+     if (terrain[terrain.length-1].x-camera.x < c.width) {
+          var rs = random(-1, 1);
+          if (random(0, 3) == 0) {
+               var rs = random(-4, 4);
+               var h = terrain[terrain.length-1].y;
+               h += rs*64;
+          } else {
+               var h = terrain[terrain.length-1].y;
+               h += rs*16;
+          }
+          if (h <= -100) {
+               h += 100
+          }
+          if (h >= 100) {
+               h -= 100
+          }
+
+          terrain.push({x: terrain[terrain.length-1].x+64, y: h});
+     }
+
+     if (terrain[0].x-camera.x > 0) {
+          var rs = random(-1, 1);
+          if (random(0, 3) == 0) {
+               var rs = random(-4, 4);
+               var h = terrain[0].y;
+               h += rs*64;
+          } else {
+               var h = terrain[0].y;
+               h += rs*16;
+          }
+          if (h <= -100) {
+               h += 100
+          }
+          if (h >= 100) {
+               h -= 100
+          }
+
+          terrain.unshift({x: terrain[0].x-64, y: h});
+     }
 }
 function draw() { //draw the graphics
      d.clearRect(0, 0, c.width, c.height);
@@ -395,46 +434,6 @@ function shipPhysics() {
                          }
                     }
                }
-          }
-
-          if (terrain[terrain.length-1].x-camera.x < c.width) {
-               var rs = random(-1, 1);
-               if (random(0, 3) == 0) {
-                    var rs = random(-4, 4);
-                    var h = terrain[terrain.length-1].y;
-                    h += rs*64;
-               } else {
-                    var h = terrain[terrain.length-1].y;
-                    h += rs*16;
-               }
-               if (h <= -100) {
-                    h += 100
-               }
-               if (h >= 100) {
-                    h -= 100
-               }
-
-               terrain.push({x: terrain[terrain.length-1].x+64, y: h});
-          }
-
-          if (terrain[0].x-camera.x > 0) {
-               var rs = random(-1, 1);
-               if (random(0, 3) == 0) {
-                    var rs = random(-4, 4);
-                    var h = terrain[0].y;
-                    h += rs*64;
-               } else {
-                    var h = terrain[0].y;
-                    h += rs*16;
-               }
-               if (h <= -100) {
-                    h += 100
-               }
-               if (h >= 100) {
-                    h -= 100
-               }
-
-               terrain.unshift({x: terrain[0].x-64, y: h});
           }
 
           //if (ships[game.ship].y <= ships[game.ship].height && !keys[87]) {
