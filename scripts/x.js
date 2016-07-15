@@ -41,16 +41,11 @@ var player = {
      xv: 0,
      yv: 0,
      og: false,
-     jetpack: true
+     jetpack: true,
+     tool: 'assembler'
 }
 var ships = [
-     {n: 'x1', x: 0, y: 512, xv: 0, yv: 0,
-     parts: [{n: 'cockpit', x:128 , y:0 , r: 0}, {n: 'armor', x:64 , y:0 , r: 0}, {n: 'thruster', x:0 , y:0 , r: 0}, {n: 'vthruster', x: 128, y: 64, r: 0}],
-     speed: 0, vspeed: 0, hp: 0, weight: 0, width: 0, height: 0, vpower: 0, fpower: 0, iy: 256, og: false},
 
-     {n: 'x1', x: 256, y: 512, xv: 0, yv: 0,
-     parts: [{n: 'cockpit', x:128 , y:0 , r: 0}, {n: 'armor', x:64 , y:0 , r: 0}, {n: 'thruster', x:0 , y:0 , r: 0}, {n: 'vthruster', x: 128, y: 64, r: 0}],
-     speed: 0, vspeed: 0, hp: 0, weight: 0, width: 0, height: 0, vpower: 0, fpower: 0, iy: 256, og: false}
 ]; //spaceships
 
 var parts = [
@@ -94,6 +89,7 @@ images.vthruster = new Image(); images.vthruster.src = "images/vthruster.png";
 images.astronaut = new Image(); images.astronaut.src = "images/astronaut.png";
 images.fastronaut = new Image(); images.fastronaut.src = "images/fastronaut.png";
 images.jetpack = new Image(); images.jetpack.src = "images/jetpack.png";
+images.assembler = new Image(); images.assembler.src = "images/assembler.png";
 
 function rotatedImage(image, x, y, degrees) {
      var radians = degrees * (Math.PI/180);
@@ -166,6 +162,14 @@ function resize() {
 
 resize(); //make canvas fullscreen automatically when the page loads
 window.onresize = resize; //resize whenever screen size changes.
+
+document.addEventListener("click", function() {
+     if (keys[66]) {
+          ships.push({n: 'x1', x: player.x, y: player.y+500, xv: 0, yv: 0, parts: [], speed: 0, vspeed: 0, hp: 0, weight: 0, width: 0, height: 0, vpower: 0, fpower: 0, iy: player.y+500, og: false});
+          game.ship = ships.length-1;
+          game.mode = 'editor';
+     }
+});
 
 for (var ship in ships) {
      var ss = shipstats(ships[ship]);
@@ -344,6 +348,9 @@ function draw() { //draw the graphics
           } else {
                d.drawImage(images.astronaut, player.x-camera.x, camera.y-player.y);
           }
+
+          d.drawImage(images[player.tool], player.x-camera.x+4, camera.y-player.y+32);
+
           d.fillRect(240, 0, 110, 40);
           d.fillStyle = "#aaa";
           d.fillText("EXIT EVA", 240, 30);
@@ -355,6 +362,9 @@ function draw() { //draw the graphics
 
 function shipPhysics() {
      for (var ship in ships) {
+          ships[ship].og = false;
+          ships[ship].r = 0;
+
           if (ships[ship].y < ships[ship].iy-100) {
                ships[ship].vpower = 100;
           } else if (ships[ship].y < ships[ship].iy) {
@@ -547,10 +557,10 @@ function update() { //update the game
                }
           }
      } else if (game.mode === "flight") {
-          ships[game.ship].og = false;
-          ships[game.ship].vpower = 0;
-          ships[game.ship].fpower = 0;
-          ships[game.ship].r = 0;
+          for (var ship in ships) {
+               ships[ship].vpower = 0;
+               ships[ship].fpower = 0;
+          }
 
           if (mouse.x >= 0 && mouse.y >= 0 && mouse.x <= 120 && mouse.y <= 40) {
                document.body.style.cursor = "pointer";
@@ -604,10 +614,10 @@ function update() { //update the game
      } else if (game.mode === "crafting") {
 
      } else if (game.mode === "eva") {
-          ships[game.ship].og = false;
-          ships[game.ship].vpower = 0;
-          ships[game.ship].fpower = 0;
-          ships[game.ship].r = 0;
+          //ships[game.ship].og = false;
+          //ships[game.ship].vpower = 0;
+          //ships[game.ship].fpower = 0;
+          //ships[game.ship].r = 0;
           player.og = false;
 
           if (mouse.x >= 240 && mouse.y >= 0 && mouse.x <= 350 && mouse.y <= 40) {
